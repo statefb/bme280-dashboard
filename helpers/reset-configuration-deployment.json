@@ -1,0 +1,12 @@
+{
+  "targetArn": "arn:aws:iot:ap-northeast-1:151364017355:thinggroup/raspi-bme280-group",
+  "deploymentName": "Deployment for raspi-bme280-group",
+  "components": {
+    "com.example.Bme280Sensing": {
+      "componentVersion": "1.0.10",
+      "configurationUpdate": {
+        "reset": [""]
+      }
+    }
+  }
+}

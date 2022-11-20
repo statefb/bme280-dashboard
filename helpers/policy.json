@@ -1,0 +1,13 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": "iot:AssumeRoleWithCertificate",
+    "Resource": 
+"arn:aws:iot:ap-northeast-1:151364017355:rolealias/GreengrassV2TokenExchangeRoleAlias"
+  },{
+    "Effect": "Allow",
+    "Action": "s3:*",
+    "Resource": "*"
+  }]
+}

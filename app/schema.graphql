@@ -1,0 +1,40 @@
+type Query {
+  getDemos: [demo!]
+  getMeasurements(input: MeasurementQueryInput): [Measurement!]!
+}
+
+type Mutation {
+  postMeasurement(input: MeasurementInput): Measurement!
+}
+
+type Subscription {
+  onPostMeasurement: Measurement @aws_subscribe(mutations: ["postMeasurement"])
+}
+
+input MeasurementQueryInput {
+  roomName: String!
+  fromTimestamp: String
+  toTimestamp: String
+  limit: Int
+}
+
+input MeasurementInput {
+  roomName: String!
+  timestamp: String!
+  temperature: Float!
+  pressure: Float!
+  humidity: Float!
+}
+
+type Measurement {
+  roomName: String!
+  timestamp: String!
+  temperature: Float!
+  pressure: Float!
+  humidity: Float!
+}
+
+type demo {
+  id: String!
+  version: String!
+}

@@ -1,0 +1,34 @@
+---
+RecipeFormatVersion: "2020-01-25"
+ComponentName: "{COMPONENT_NAME}"
+ComponentVersion: "{COMPONENT_VERSION}"
+ComponentDescription: "BME280 sensing component."
+ComponentPublisher: "{COMPONENT_AUTHOR}"
+ComponentConfiguration:
+  DefaultConfiguration:
+    accessControl:
+      # aws.greengrass.ipc.pubsub:
+      #   "com.example.Bme280Sensing:pubsub:1":
+      #     operations:
+      #       - "aws.greengrass#PublishToTopic"
+      #     resources:
+      #       - "*"
+      # IoT coreへのpublishを許可する
+      aws.greengrass.ipc.mqttproxy:
+        "com.example.Bme280Sensing:publish:1":
+          operations:
+            - "aws.greengrass#PublishToIoTCore"
+          resources:
+            - "*"
+Manifests:
+  - Platform:
+      os: all
+    Artifacts:
+      # ファイル名はフォルダ名に一致させる必要あり
+      - URI: "s3://BUCKET_NAME/COMPONENT_NAME/COMPONENT_VERSION/sensing.zip"
+        Unarchive: ZIP
+    Lifecycle:
+      Install:
+        Script: "python3 -m pip install awsiotsdk"
+      # {artifacts:decompressedPath}直下のパスはフォルダ名に合致させる必要あり
+      Run: "python3 -u {artifacts:decompressedPath}/sensing/main.py"
