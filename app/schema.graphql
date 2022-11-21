@@ -1,6 +1,8 @@
 type Query {
   getDemos: [demo!]
   getMeasurements(input: MeasurementQueryInput): [Measurement!]!
+    @aws_api_key
+    @aws_iam
 }
 
 type Mutation {
@@ -8,7 +10,10 @@ type Mutation {
 }
 
 type Subscription {
-  onPostMeasurement: Measurement @aws_subscribe(mutations: ["postMeasurement"])
+  onPostMeasurement: Measurement
+    @aws_subscribe(mutations: ["postMeasurement"])
+    @aws_api_key
+    @aws_iam
 }
 
 input MeasurementQueryInput {
@@ -16,6 +21,7 @@ input MeasurementQueryInput {
   fromTimestamp: String
   toTimestamp: String
   limit: Int
+  period: Int
 }
 
 input MeasurementInput {
@@ -26,7 +32,7 @@ input MeasurementInput {
   humidity: Float!
 }
 
-type Measurement {
+type Measurement @aws_api_key @aws_iam {
   roomName: String!
   timestamp: String!
   temperature: Float!

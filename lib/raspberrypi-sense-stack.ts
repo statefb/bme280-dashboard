@@ -166,6 +166,7 @@ export class RaspberrypiSenseStack extends cdk.Stack {
       environment: {
         TABLE_NAME: table.tableName,
       },
+      timeout: Duration.seconds(60),
     });
     table.grantReadWriteData(apiHandler);
     apiHandler.addPermission("ApiHandlerInvoke", {
@@ -214,6 +215,10 @@ export class RaspberrypiSenseStack extends cdk.Stack {
 
     new cdk.CfnOutput(this, "ApiKey", {
       value: api.apiKey ?? "no api key",
+    });
+
+    new cdk.CfnOutput(this, "ApiGraphqlEndpoint", {
+      value: api.graphqlUrl,
     });
   }
 }

@@ -58,15 +58,15 @@ def handler(event, context):
         from_timestamp = gql_input.get("fromTimestamp")
         to_timestamp = gql_input.get("toTimestamp")
         limit = gql_input.get("limit")
+        period = gql_input.get("period")
 
         if limit:
             response = table.query(
                 KeyConditionExpression=Key("room_name").eq(room_name),
                 Limit=limit,
                 ScanIndexForward=False,
-                # ProjectionExpression="relay_device_id, relay_time, msg_id",
             )
-            print(f'[DEBUG]: {response["Items"]}')
+            # print(f'[DEBUG]: {response["Items"]}')
         elif from_timestamp is not None and to_timestamp is not None:
             response = table.query(
                 KeyConditionExpression=Key("room_name").eq(room_name)
@@ -74,15 +74,18 @@ def handler(event, context):
                     convert_timestamp_to_epoch(datetime.fromisoformat(from_timestamp)),
                     convert_timestamp_to_epoch(datetime.fromisoformat(to_timestamp)),
                 ),
-                # ProjectionExpression="relay_device_id, relay_time, msg_id",
             )
-            print(f'[DEBUG]: {response["Items"]}')
+            # print(f'[DEBUG]: {response["Items"]}')
         else:
             raise Exception(
                 "`limit` or `fromTimestamp` and `toTimestamp` must be givne"
             )
 
         items = response["Items"]
+
+        # decimation
+        if period:
+            items = items[::period]
 
         # convert epoch to timestamp
         items = [
