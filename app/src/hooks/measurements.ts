@@ -29,7 +29,7 @@ const useMeasurements = (props: UseMeasurementProps) => {
         period: props.period,
       }),
     {
-      revalidateOnFocus: false,
+      revalidateOnFocus: true,
       refreshInterval: REFLESH_INTERVAL,
     }
   );

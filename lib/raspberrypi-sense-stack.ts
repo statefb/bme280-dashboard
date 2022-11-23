@@ -101,7 +101,7 @@ export class RaspberrypiSenseStack extends cdk.Stack {
     //   removalPolicy: RemovalPolicy.DESTROY,
     // });
     const table = new ddb.Table(this, "Table", {
-      partitionKey: { name: "room_name", type: ddb.AttributeType.STRING },
+      partitionKey: { name: "date", type: ddb.AttributeType.STRING },
       sortKey: { name: "timestamp", type: ddb.AttributeType.NUMBER },
       billingMode: ddb.BillingMode.PAY_PER_REQUEST,
       timeToLiveAttribute: "expiration_timestamp",

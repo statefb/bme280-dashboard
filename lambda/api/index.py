@@ -48,7 +48,7 @@ def handler(event, context):
         gql_input = arguments.get("input")
 
     if field_name == "getMeasurements":
-        print(gql_input)
+        # print(gql_input)
         room_name = gql_input["roomName"]
         from_timestamp = gql_input.get("fromTimestamp")
         to_timestamp = gql_input.get("toTimestamp")
@@ -56,20 +56,30 @@ def handler(event, context):
         period = gql_input.get("period")
 
         if limit:
+            now = datetime.now()
             response = table.query(
-                KeyConditionExpression=Key("room_name").eq(room_name),
+                KeyConditionExpression=Key("date").eq(now.date().isoformat()),
                 Limit=limit,
                 ScanIndexForward=False,
+                FilterExpression=Attr("room_name").eq(room_name),
             )
+            # response = table.query(
+            #     KeyConditionExpression=Key("room_name").eq(room_name),
+            #     Limit=limit,
+            #     ScanIndexForward=False,
+            # )
             # print(f'[DEBUG]: {response["Items"]}')
         elif from_timestamp is not None and to_timestamp is not None:
-            response = table.query(
-                KeyConditionExpression=Key("room_name").eq(room_name)
-                & Key("timestamp").between(
-                    convert_timestamp_to_epoch(datetime.fromisoformat(from_timestamp)),
-                    convert_timestamp_to_epoch(datetime.fromisoformat(to_timestamp)),
-                ),
+            raise NotImplementedError(
+                "specifying start and end timestamp as argument is currently not supported."
             )
+            # response = table.query(
+            #     KeyConditionExpression=Key("room_name").eq(room_name)
+            #     & Key("timestamp").between(
+            #         convert_timestamp_to_epoch(datetime.fromisoformat(from_timestamp)),
+            #         convert_timestamp_to_epoch(datetime.fromisoformat(to_timestamp)),
+            #     ),
+            # )
             # print(f'[DEBUG]: {response["Items"]}')
         else:
             raise Exception(
@@ -107,8 +117,12 @@ def handler(event, context):
         # insert to dynamodb
         # -----------------------
         item = {
-            "room_name": room_name,
+            # partition key
+            "date": timestamp.date().isoformat(),
+            # sort key
             "timestamp": convert_timestamp_to_epoch(timestamp),
+            # other attributes
+            "room_name": room_name,
             "temperature": temperature,
             "pressure": pressure,
             "humidity": humidity,
