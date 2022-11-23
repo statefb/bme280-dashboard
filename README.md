@@ -21,6 +21,7 @@
   ```
 - replace `context.certArn` of cdk.json by certificateArn
 - `cdk deploy RaspberrypiSenseStack --require-approval never`
+- `cdk deploy FrontendStack --require-approval never`
 
 ### Raspberry pi
 
