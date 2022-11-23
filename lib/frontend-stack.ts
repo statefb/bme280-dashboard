@@ -13,6 +13,7 @@ export interface FrontendStackProps extends StackProps {
   graphqlEndpoint: string;
   apiKey: string;
   apiRegion: string;
+  lambdaApiKey: string;
 }
 
 export class FrontendStack extends Stack {
@@ -44,22 +45,18 @@ export class FrontendStack extends Stack {
       sources: [
         s3deploy.Source.asset(path.join(__dirname, "../app"), {
           bundling: {
-            // ビルドの出力が複数のファイルで構成されている場合の設定
             outputType: cdk.BundlingOutput.NOT_ARCHIVED,
-            // ビルドを実行する Docker コンテナのイメージを指定
             image: cdk.DockerImage.fromRegistry(
               "public.ecr.aws/docker/library/node:16-bullseye"
             ),
-            // ビルド時の環境変数に、バックエンドが出力した各種設定を反映する
             environment: {
-              // バックエンド API の URL
               VITE_APPSYNC_ENDPOINT: props.graphqlEndpoint,
               VITE_APPSYNC_API_KEY: props.apiKey,
               VITE_APPSYNC_REGION: props.apiRegion,
+              // NOTE: embed api key as env is not secure.
+              VITE_LAMBDA_API_KEY: props.lambdaApiKey,
             },
-            // ビルドを実行する Docker コンテナ内のユーザー
             user: "node",
-            // ビルドを実行するためのコマンド
             command: [
               "bash",
               "-c",
@@ -75,7 +72,7 @@ export class FrontendStack extends Stack {
       destinationBucket: s3Bucket!,
       distribution: cloudFrontWebDistribution,
       distributionPaths: ["/*"],
-      retainOnDelete: false, // デプロイ時にcloudfrontのキャッシュを削除
+      retainOnDelete: false,
     });
 
     new cdk.CfnOutput(this, "CloudFrontDeploy", {

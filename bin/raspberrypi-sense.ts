@@ -31,6 +31,7 @@ async function createFrontend() {
       graphqlEndpoint: outputs.ApiGraphqlEndpoint,
       apiKey: outputs.ApiKey,
       apiRegion: process.env.CDK_DEFAULT_REGION || "ap-northeast-1",
+      lambdaApiKey: outputs.LambdaApiKey,
       env: {
         account: process.env.CDK_DEFAULT_ACCOUNT,
         region: process.env.CDK_DEFAULT_REGION,

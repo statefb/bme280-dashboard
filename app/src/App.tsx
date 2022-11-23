@@ -4,11 +4,17 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { Amplify, API, graphqlOperation } from "aws-amplify";
 
+// Amplify.configure({
+//   aws_appsync_graphqlEndpoint: import.meta.env.VITE_APPSYNC_ENDPOINT,
+//   aws_appsync_region: import.meta.env.VITE_APPSYNC_REGION,
+//   aws_appsync_authenticationType: "API_KEY",
+//   aws_appsync_apiKey: import.meta.env.VITE_APPSYNC_API_KEY,
+// });
+
 Amplify.configure({
   aws_appsync_graphqlEndpoint: import.meta.env.VITE_APPSYNC_ENDPOINT,
   aws_appsync_region: import.meta.env.VITE_APPSYNC_REGION,
-  aws_appsync_authenticationType: "API_KEY",
-  aws_appsync_apiKey: import.meta.env.VITE_APPSYNC_API_KEY,
+  aws_appsync_authenticationType: "AWS_LAMBDA",
 });
 
 const darkTheme = createTheme({

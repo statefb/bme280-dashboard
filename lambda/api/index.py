@@ -47,12 +47,7 @@ def handler(event, context):
     if arguments:
         gql_input = arguments.get("input")
 
-    if field_name == "getDemos":
-        return [
-            {"id": "AAA", "version": "v1.1.0"},
-            {"id": "BBB", "version": "v1.1.1"},
-        ]
-    elif field_name == "getMeasurements":
+    if field_name == "getMeasurements":
         print(gql_input)
         room_name = gql_input["roomName"]
         from_timestamp = gql_input.get("fromTimestamp")

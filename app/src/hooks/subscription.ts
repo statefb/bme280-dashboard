@@ -18,6 +18,7 @@ const useSubscribeMeasurement = () => {
   useEffect(() => {
     API.graphql({
       query: subscriptions.onPostMeasurement as unknown as string,
+      authToken: import.meta.env.VITE_LAMBDA_API_KEY,
     }).subscribe({
       next: ({ value: { data } }: OnPostMeasurementEvent) => {
         setMeasuremnt(data.onPostMeasurement);

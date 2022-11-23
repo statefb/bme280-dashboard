@@ -15,6 +15,7 @@ const fetcher = (query: string, input: any) => {
     variables: {
       input: input,
     },
+    authToken: import.meta.env.VITE_LAMBDA_API_KEY,
   }).then((res: any) => res.data.getMeasurements);
 };
 

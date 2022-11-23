@@ -13,6 +13,8 @@ import * as ddb from "aws-cdk-lib/aws-dynamodb";
 import { IFunction, Runtime } from "aws-cdk-lib/aws-lambda";
 import * as appsync from "@aws-cdk/aws-appsync-alpha";
 import { Duration, Expiration, RemovalPolicy } from "aws-cdk-lib";
+import { v5 as uuidv5 } from "uuid";
+import { RetentionDays } from "aws-cdk-lib/aws-logs";
 
 export class RaspberrypiSenseStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -91,12 +93,33 @@ export class RaspberrypiSenseStack extends cdk.Stack {
     thingPrincipalAttachment.addDependsOn(thing);
 
     // Database
-    const table = new ddb.Table(this, "SenserTable", {
+    // const table = new ddb.Table(this, "SenserTable", {
+    //   partitionKey: { name: "room_name", type: ddb.AttributeType.STRING },
+    //   sortKey: { name: "timestamp", type: ddb.AttributeType.NUMBER },
+    //   billingMode: ddb.BillingMode.PAY_PER_REQUEST,
+    //   timeToLiveAttribute: "expiration_timestamp",
+    //   removalPolicy: RemovalPolicy.DESTROY,
+    // });
+    const table = new ddb.Table(this, "Table", {
       partitionKey: { name: "room_name", type: ddb.AttributeType.STRING },
       sortKey: { name: "timestamp", type: ddb.AttributeType.NUMBER },
       billingMode: ddb.BillingMode.PAY_PER_REQUEST,
       timeToLiveAttribute: "expiration_timestamp",
       removalPolicy: RemovalPolicy.DESTROY,
+    });
+
+    // appsync api auth handler
+    const authKey = uuidv5(
+      process.env.CDK_DEFAULT_ACCOUNT || "seed",
+      uuidv5.URL
+    );
+    const authHandler = new nodeLambda.NodejsFunction(this, "AuthHandler", {
+      entry: path.join(__dirname, "../lambda/auth/index.ts"),
+      runtime: Runtime.NODEJS_18_X,
+      environment: {
+        LAMBDA_API_KEY: authKey,
+      },
+      logRetention: RetentionDays.FIVE_DAYS,
     });
 
     // AppSync
@@ -110,15 +133,21 @@ export class RaspberrypiSenseStack extends cdk.Stack {
           authorizationType: appsync.AuthorizationType.IAM,
         },
         additionalAuthorizationModes: [
+          // {
+          //   authorizationType: appsync.AuthorizationType.API_KEY,
+          //   apiKeyConfig: {
+          //     expires: Expiration.after(Duration.days(365)),
+          //   },
+          // },
           {
-            authorizationType: appsync.AuthorizationType.API_KEY,
-            apiKeyConfig: {
-              expires: Expiration.after(Duration.days(365)),
+            authorizationType: appsync.AuthorizationType.LAMBDA,
+            lambdaAuthorizerConfig: {
+              handler: authHandler,
             },
           },
         ],
       },
-      xrayEnabled: true,
+      xrayEnabled: false,
     });
 
     // action lambda function
@@ -132,6 +161,7 @@ export class RaspberrypiSenseStack extends cdk.Stack {
           TABLE_NAME: table.tableName,
           APPSYNC_URL: api.graphqlUrl,
         },
+        logRetention: RetentionDays.FIVE_DAYS,
       }
     );
     topicActionFunc.role?.addManagedPolicy(
@@ -159,7 +189,7 @@ export class RaspberrypiSenseStack extends cdk.Stack {
       },
     });
 
-    // handler
+    // api handler
     const apiHandler = new pythonLambda.PythonFunction(this, "ApiHandler", {
       entry: path.join(__dirname, "../lambda/api"),
       runtime: Runtime.PYTHON_3_9,
@@ -167,6 +197,7 @@ export class RaspberrypiSenseStack extends cdk.Stack {
         TABLE_NAME: table.tableName,
       },
       timeout: Duration.seconds(60),
+      logRetention: RetentionDays.FIVE_DAYS,
     });
     table.grantReadWriteData(apiHandler);
     apiHandler.addPermission("ApiHandlerInvoke", {
@@ -219,6 +250,10 @@ export class RaspberrypiSenseStack extends cdk.Stack {
 
     new cdk.CfnOutput(this, "ApiGraphqlEndpoint", {
       value: api.graphqlUrl,
+    });
+
+    new cdk.CfnOutput(this, "LambdaApiKey", {
+      value: authKey,
     });
   }
 }

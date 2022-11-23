@@ -1,8 +1,7 @@
 type Query {
-  getDemos: [demo!]
   getMeasurements(input: MeasurementQueryInput): [Measurement!]!
-    @aws_api_key
     @aws_iam
+    @aws_lambda
 }
 
 type Mutation {
@@ -12,8 +11,8 @@ type Mutation {
 type Subscription {
   onPostMeasurement: Measurement
     @aws_subscribe(mutations: ["postMeasurement"])
-    @aws_api_key
     @aws_iam
+    @aws_lambda
 }
 
 input MeasurementQueryInput {
@@ -32,15 +31,10 @@ input MeasurementInput {
   humidity: Float!
 }
 
-type Measurement @aws_api_key @aws_iam {
+type Measurement @aws_iam @aws_lambda {
   roomName: String!
   timestamp: String!
   temperature: Float!
   pressure: Float!
   humidity: Float!
-}
-
-type demo {
-  id: String!
-  version: String!
 }
