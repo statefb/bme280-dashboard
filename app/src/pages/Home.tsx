@@ -14,10 +14,8 @@ import useMeasurements from "../hooks/measurements";
 import Loading from "../components/Loading";
 import { convertToTimezonedTimestamp } from "../utils/datetime";
 import { LIMIT, PERIOD, ROOM_NAME } from "../conf";
-
-type OnPostMeasurementEvent = {
-  value: { data: { onPostMeasurement: any } };
-};
+import useSubscribeMeasurement from "../hooks/subscription";
+import CurrentTimeIndicator from "../components/CurrentTimeIndicator";
 
 const Contents = styled(Paper)(({ theme }) => ({
   ...theme.typography.h6,
@@ -26,43 +24,33 @@ const Contents = styled(Paper)(({ theme }) => ({
 }));
 
 const Home: React.FC = () => {
-  const [measurement, setMeasuremnt] = useState<Measurement>({
-    temperature: 0.0,
-    pressure: 0.0,
-    humidity: 0.0,
-    timestamp: "",
-  });
   const { data, error, isLoading } = useMeasurements({
     roomName: ROOM_NAME,
     limit: LIMIT,
     period: PERIOD,
   });
 
-  useEffect(() => {
-    API.graphql({
-      query: subscriptions.onPostMeasurement as unknown as string,
-    }).subscribe({
-      next: ({ value: { data } }: OnPostMeasurementEvent) => {
-        setMeasuremnt(data.onPostMeasurement);
-      },
-      error: (error: any) => console.warn(error),
-    });
-  }, []);
+  const { currentMeasurement } = useSubscribeMeasurement();
 
   return (
     <>
+      <CurrentTimeIndicator
+        timestamp={convertToTimezonedTimestamp(currentMeasurement.timestamp)}
+      ></CurrentTimeIndicator>
       <Grid container spacing={0}>
         <Grid item xs={4}>
-          <CardHumidity value={measurement.humidity}></CardHumidity>
+          <CardHumidity value={currentMeasurement.humidity}></CardHumidity>
         </Grid>
         <Grid item xs={4}>
-          <CardTemperature value={measurement.temperature}></CardTemperature>
+          <CardTemperature
+            value={currentMeasurement.temperature}
+          ></CardTemperature>
         </Grid>
         <Grid item xs={4}>
           <Contents>
             <CardNumber
               title={"気圧[Pa]"}
-              value={measurement.pressure}
+              value={currentMeasurement.pressure}
               precision={0}
             ></CardNumber>
           </Contents>
