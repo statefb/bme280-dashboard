@@ -5,8 +5,9 @@ import { REFLESH_INTERVAL } from "../conf";
 
 export interface UseMeasurementProps {
   roomName: string;
-  limit: number;
-  period: number;
+  fromTimestamp: string;
+  toTimestamp: string;
+  freq: "1M" | "1W" | "1D" | "1H" | "5min" | "10min";
 }
 
 const fetcher = (query: string, input: any) => {
@@ -25,8 +26,9 @@ const useMeasurements = (props: UseMeasurementProps) => {
     (query) =>
       fetcher(query as unknown as string, {
         roomName: props.roomName,
-        limit: props.limit,
-        period: props.period,
+        fromTimestamp: props.fromTimestamp,
+        toTimestamp: props.toTimestamp,
+        freq: props.freq,
       }),
     {
       revalidateOnFocus: true,

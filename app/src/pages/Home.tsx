@@ -16,6 +16,7 @@ import { convertToTimezonedTimestamp } from "../utils/datetime";
 import { LIMIT, PERIOD, ROOM_NAME } from "../conf";
 import useSubscribeMeasurement from "../hooks/subscription";
 import CurrentTimeIndicator from "../components/CurrentTimeIndicator";
+import moment from "moment-timezone";
 
 const Contents = styled(Paper)(({ theme }) => ({
   ...theme.typography.h6,
@@ -24,10 +25,13 @@ const Contents = styled(Paper)(({ theme }) => ({
 }));
 
 const Home: React.FC = () => {
+  const from_ = moment(Date.now()).subtract(6, "hours").utc().format();
+  const to_ = moment(Date.now()).utc().format();
   const { data, error, isLoading } = useMeasurements({
     roomName: ROOM_NAME,
-    limit: LIMIT,
-    period: PERIOD,
+    fromTimestamp: from_,
+    toTimestamp: to_,
+    freq: "10min",
   });
 
   const { currentMeasurement } = useSubscribeMeasurement();

@@ -19,8 +19,7 @@ input MeasurementQueryInput {
   roomName: String!
   fromTimestamp: String
   toTimestamp: String
-  limit: Int
-  period: Int
+  freq: String
 }
 
 input MeasurementInput {
