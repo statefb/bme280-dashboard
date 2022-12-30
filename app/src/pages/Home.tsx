@@ -27,6 +27,9 @@ const Contents = styled(Paper)(({ theme }) => ({
 const Home: React.FC = () => {
   const from_ = moment(Date.now()).subtract(6, "hours").utc().format();
   const to_ = moment(Date.now()).utc().format();
+  console.log(from_);
+  console.log(to_);
+
   const { data, error, isLoading } = useMeasurements({
     roomName: ROOM_NAME,
     fromTimestamp: from_,
