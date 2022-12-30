@@ -31,9 +31,9 @@ input MeasurementInput {
 }
 
 type Measurement @aws_iam @aws_lambda {
-  roomName: String!
+  roomName: String
   timestamp: String!
-  temperature: Float!
-  pressure: Float!
-  humidity: Float!
+  temperature: Float
+  pressure: Float
+  humidity: Float
 }

@@ -132,15 +132,14 @@ def handler(event, context):
 
         from_ = datetime.fromisoformat(from_timestamp)
         to_ = datetime.fromisoformat(to_timestamp)
-        now = datetime.now()
-        day_range = [
-            from_.date() + timedelta(days=d) for d in range((to_ - from_).days + 1)
-        ]
+
+        day_range = pd.period_range(from_, to_)
 
         dat = []
         with ThreadPoolExecutor(max_workers=10) as executor:
             futures = []
             for d in day_range:
+                d = d.to_timestamp().date()
                 print(f"[DEBUG] submit task for: {d}")
                 futures.append(
                     executor.submit(ddb_query, d, freq, from_, to_, room_name)
@@ -149,6 +148,7 @@ def handler(event, context):
                 dat.extend(f.result())
 
         print(f"[DEBUG] items start: {dat[0]}")
+        print(f"[DEBUG] dat: {dat}")
 
         # convert to camel case
         items = [convert_all_key_to_camel(item) for item in dat]

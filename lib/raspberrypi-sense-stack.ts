@@ -196,7 +196,7 @@ export class RaspberrypiSenseStack extends cdk.Stack {
       environment: {
         TABLE_NAME: table.tableName,
       },
-      memorySize: 512,
+      memorySize: 1024,
       timeout: Duration.seconds(60),
       logRetention: RetentionDays.FIVE_DAYS,
     });

@@ -22,9 +22,9 @@ const fetcher = (query: string, input: any) => {
 
 const useMeasurements = (props: UseMeasurementProps) => {
   const { data, error } = useSWR(
-    queries.getMeasurements,
-    (query) =>
-      fetcher(query as unknown as string, {
+    props.freq, // cache key
+    () =>
+      fetcher(queries.getMeasurements as unknown as string, {
         roomName: props.roomName,
         fromTimestamp: props.fromTimestamp,
         toTimestamp: props.toTimestamp,

@@ -1,22 +1,19 @@
 import { Box, Grid, Stack } from "@mui/material";
 import CardNumber from "../components/CardNumber";
-import CardSensorHistory from "../components/CardSensorHistory";
-import { Amplify, API, graphqlOperation } from "aws-amplify";
-import { useEffect, useState } from "react";
-import * as subscriptions from "../graphql/subscriptions";
-import { Measurement } from "../types/measurement";
-import { Container } from "@mui/system";
 import CardHumidity from "../components/CardHumidity";
 import CardTemperature from "../components/CardTemperature";
 import { styled } from "@mui/material/styles";
 import Paper from "@mui/material/Paper";
-import useMeasurements from "../hooks/measurements";
-import Loading from "../components/Loading";
 import { convertToTimezonedTimestamp } from "../utils/datetime";
 import { LIMIT, PERIOD, ROOM_NAME } from "../conf";
 import useSubscribeMeasurement from "../hooks/subscription";
 import CurrentTimeIndicator from "../components/CurrentTimeIndicator";
-import moment from "moment-timezone";
+import RecentTrend from "../components/RecentTrend";
+import Switch from "@mui/material/Switch";
+import FormGroup from "@mui/material/FormGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import { useState } from "react";
+import PastTrend from "../components/PastTrend";
 
 const Contents = styled(Paper)(({ theme }) => ({
   ...theme.typography.h6,
@@ -25,19 +22,12 @@ const Contents = styled(Paper)(({ theme }) => ({
 }));
 
 const Home: React.FC = () => {
-  const from_ = moment(Date.now()).subtract(6, "hours").utc().format();
-  const to_ = moment(Date.now()).utc().format();
-  console.log(from_);
-  console.log(to_);
-
-  const { data, error, isLoading } = useMeasurements({
-    roomName: ROOM_NAME,
-    fromTimestamp: from_,
-    toTimestamp: to_,
-    freq: "10min",
-  });
-
   const { currentMeasurement } = useSubscribeMeasurement();
+  const [checked, setChecked] = useState(true);
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setChecked(event.target.checked);
+  };
 
   return (
     <>
@@ -64,34 +54,13 @@ const Home: React.FC = () => {
         </Grid>
       </Grid>
       <Stack direction={"column"}>
-        {isLoading ? (
-          <Loading></Loading>
-        ) : (
-          <>
-            <CardSensorHistory
-              data={data.map((x: Measurement) => {
-                return [convertToTimezonedTimestamp(x.timestamp), x.humidity];
-              })}
-              measureName="humidity"
-            ></CardSensorHistory>
-            <CardSensorHistory
-              data={data.map((x: Measurement) => {
-                return [
-                  convertToTimezonedTimestamp(x.timestamp),
-                  x.temperature,
-                ];
-              })}
-              measureName="temperature"
-            ></CardSensorHistory>
-
-            <CardSensorHistory
-              data={data.map((x: Measurement) => {
-                return [convertToTimezonedTimestamp(x.timestamp), x.pressure];
-              })}
-              measureName="pressure"
-            ></CardSensorHistory>
-          </>
-        )}
+        <FormGroup>
+          <FormControlLabel
+            control={<Switch checked={checked} onChange={handleChange} />}
+            label="直近24時間"
+          />
+        </FormGroup>
+        {checked ? <RecentTrend></RecentTrend> : <PastTrend></PastTrend>}
       </Stack>
     </>
   );
