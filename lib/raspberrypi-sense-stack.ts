@@ -189,9 +189,9 @@ export class RaspberrypiSenseStack extends cdk.Stack {
       },
     });
 
-    // api handler
-    const apiHandler = new pythonLambda.PythonFunction(this, "ApiHandler", {
-      entry: path.join(__dirname, "../lambda/api"),
+    // api handlers
+    const getHandler = new pythonLambda.PythonFunction(this, "GetHandler", {
+      entry: path.join(__dirname, "../lambda/get"),
       runtime: Runtime.PYTHON_3_9,
       environment: {
         TABLE_NAME: table.tableName,
@@ -200,28 +200,37 @@ export class RaspberrypiSenseStack extends cdk.Stack {
       timeout: Duration.seconds(60),
       logRetention: RetentionDays.FIVE_DAYS,
     });
-    table.grantReadWriteData(apiHandler);
-    apiHandler.addPermission("ApiHandlerInvoke", {
+    table.grantReadWriteData(getHandler);
+    getHandler.addPermission("ApiHandlerInvoke", {
+      principal: new iam.ServicePrincipal("appsync.amazonaws.com"),
+    });
+
+    const postHandler = new pythonLambda.PythonFunction(this, "PostHandler", {
+      entry: path.join(__dirname, "../lambda/post"),
+      runtime: Runtime.PYTHON_3_9,
+      environment: {
+        TABLE_NAME: table.tableName,
+      },
+      timeout: Duration.seconds(5),
+      logRetention: RetentionDays.FIVE_DAYS,
+    });
+    table.grantReadWriteData(postHandler);
+    postHandler.addPermission("ApiHandlerInvoke", {
       principal: new iam.ServicePrincipal("appsync.amazonaws.com"),
     });
 
     // lambda datasource
-    const lambdaDs = api.addLambdaDataSource("LambdaDs", apiHandler);
+    const getLambdaDs = api.addLambdaDataSource("GetLambdaDs", getHandler);
+    const postLambdaDs = api.addLambdaDataSource("PostLambdaDs", postHandler);
 
     // add resolvers
-    lambdaDs.createResolver({
-      typeName: "Query",
-      fieldName: "getDemos",
-      requestMappingTemplate: appsync.MappingTemplate.lambdaRequest(),
-      responseMappingTemplate: appsync.MappingTemplate.lambdaResult(),
-    });
-    lambdaDs.createResolver({
+    getLambdaDs.createResolver({
       typeName: "Query",
       fieldName: "getMeasurements",
       requestMappingTemplate: appsync.MappingTemplate.lambdaRequest(),
       responseMappingTemplate: appsync.MappingTemplate.lambdaResult(),
     });
-    lambdaDs.createResolver({
+    postLambdaDs.createResolver({
       typeName: "Mutation",
       fieldName: "postMeasurement",
       requestMappingTemplate: appsync.MappingTemplate.lambdaRequest(),
